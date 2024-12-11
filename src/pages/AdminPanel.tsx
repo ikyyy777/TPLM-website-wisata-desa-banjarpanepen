@@ -1,0 +1,146 @@
+import { useEffect, useState } from 'react';
+import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import AdminAgenda from './AdminAgenda';
+import AdminGaleri from './AdminGaleri';
+import AdminWisata from './AdminWisata';
+import toast from 'react-hot-toast';
+
+export default function AdminPanel() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    // Sembunyikan navbar saat komponen dimount
+    const navbar = document.querySelector('nav');
+    if (navbar) {
+      navbar.style.display = 'none';
+    }
+
+    // Tampilkan kembali navbar saat komponen unmount
+    return () => {
+      if (navbar) {
+        navbar.style.display = 'block';
+      }
+    };
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error('Password tidak cocok!');
+      return;
+    }
+
+    try {
+      const response = await fetch(import.meta.env.VITE_UPDATE_PASSWORD_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: 'admin', // Hardcoded karena hanya ada 1 admin
+          new_password: newPassword
+        })
+      });
+
+      if (response.ok) {
+        toast.success('Password berhasil diubah');
+        setShowPasswordDialog(false);
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        const data = await response.json();
+        toast.error('Gagal mengubah password: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error updating password:', error);
+      toast.error('Terjadi kesalahan saat mengubah password');
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex bg-gray-100">
+      <aside className="w-64 bg-white text-gray-800 flex flex-col h-screen sticky top-0 shadow-lg">
+        <div className="p-4 text-lg font-bold border-b border-gray-200">Admin Panel</div>
+        <nav className="flex-1">
+          <ul>
+            <li>
+              <Link to="/admin/wisata" className="block px-4 py-2 hover:bg-gray-100 transition duration-200">Wisata</Link>
+            </li>
+            <li>
+              <Link to="/admin/agenda" className="block px-4 py-2 hover:bg-gray-100 transition duration-200">Agenda</Link>
+            </li>
+            <li>
+              <Link to="/admin/galeri" className="block px-4 py-2 hover:bg-gray-100 transition duration-200">Gallery</Link>
+            </li>
+          </ul>
+        </nav>
+        <div className="sticky bottom-0 w-full border-t border-gray-200">
+          <button 
+            onClick={() => setShowPasswordDialog(true)}
+            className="block w-full px-4 py-3 text-left hover:bg-gray-100 transition duration-200 bg-white"
+          >
+            Ganti Password Admin
+          </button>
+          <button
+            onClick={handleLogout}
+            className="block w-full px-4 py-3 text-left text-red-500 hover:bg-gray-100 transition duration-200 bg-white border-t border-gray-200"
+          >
+            Logout
+          </button>
+        </div>
+      </aside>
+      <main className="flex-1 p-8 bg-gray-100">
+        <Routes>
+          <Route path="wisata" element={<AdminWisata />} />
+          <Route path="agenda" element={<AdminAgenda />} />
+          <Route path="galeri" element={<AdminGaleri />} />
+        </Routes>
+
+        {showPasswordDialog && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg w-96 shadow-xl">
+              <h2 className="text-gray-800 text-xl mb-4">Ganti Password</h2>
+              <input
+                type="password"
+                placeholder="Password Baru"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="password"
+                placeholder="Konfirmasi Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowPasswordDialog(false)}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleChangePassword}
+                  className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
+                >
+                  Simpan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
