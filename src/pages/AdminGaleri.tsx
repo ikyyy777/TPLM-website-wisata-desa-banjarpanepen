@@ -25,6 +25,43 @@ export default function AdminGaleri() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Fungsi untuk mengecek token
+  const checkToken = async () => {
+    try {
+      console.log('Checking token...');
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
+      
+      if (!token) {
+        console.log('No token found, redirecting to login...');
+        window.location.href = '/admin/login';
+        return;
+      }
+  
+      console.log('Making request to check token...');
+      const response = await fetch(import.meta.env.VITE_TOKEN_CHECK_API, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      console.log('Token check response:', data);
+      
+      if (data.status !== 'success') {
+        console.log('Token check failed, redirecting to login...');
+        localStorage.removeItem('token');
+        window.location.href = '/admin/login';
+      } else {
+        console.log('Token check successful');
+      }
+    } catch (error) {
+      console.error('Error checking token:', error);
+      localStorage.removeItem('token');
+      window.location.href = '/admin/login';
+    }
+  };  
+
   // Fungsi untuk mengambil data galeri
   const fetchGalleries = async () => {
     try {
@@ -38,6 +75,7 @@ export default function AdminGaleri() {
 
   useEffect(() => {
     fetchGalleries();
+    checkToken();
   }, []);
 
   // Handle file upload
@@ -67,6 +105,7 @@ export default function AdminGaleri() {
 
     try {
       setIsLoading(true);
+      const token = localStorage.getItem('token');
 
       if (!selectedFile && !editMode) {
         toast.error('Harap pilih gambar');
@@ -86,7 +125,8 @@ export default function AdminGaleri() {
             imageFormData,
             {
               headers: {
-                'Content-Type': 'multipart/form-data'
+                'Content-Type': 'multipart/form-data',
+                Authorization: `Bearer ${token}`
               },
               onUploadProgress: (event: ProgressEvent) => {
                 const progress = event.total
@@ -112,9 +152,17 @@ export default function AdminGaleri() {
         await axios.put(import.meta.env.VITE_GALLERY_API, {
           ...galleryData,
           id: selectedId
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         });
       } else {
-        await axios.post(import.meta.env.VITE_GALLERY_API, galleryData);
+        await axios.post(import.meta.env.VITE_GALLERY_API, galleryData, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
       }
 
       setFormData({
@@ -161,9 +209,17 @@ export default function AdminGaleri() {
     if (result.isConfirmed) {
       try {
         setIsLoading(true);
-        await axios.delete(import.meta.env.VITE_GALLERY_API, {
-          params: { id }
-        });
+        const token = localStorage.getItem('token');
+        await axios.request({
+          url: import.meta.env.VITE_GALLERY_API,
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          data: { id }, // Send the ID in the request body
+        });        
+        
         fetchGalleries();
         setIsLoading(false);
         Swal.fire({
@@ -202,7 +258,7 @@ export default function AdminGaleri() {
                 name="judul"
                 value={formData.judul}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full p-2 rounded border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                 placeholder="Masukkan judul galeri"
                 required
                 disabled={isLoading}
@@ -216,7 +272,7 @@ export default function AdminGaleri() {
                 name="tanggal"
                 value={formData.tanggal}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full p-2 rounded border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
                 required
                 disabled={isLoading}
               />
@@ -258,7 +314,7 @@ export default function AdminGaleri() {
               name="deskripsi"
               value={formData.deskripsi}
               onChange={handleInputChange}
-              className="w-full p-2 rounded border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full p-2 rounded border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-black"
               rows={4}
               placeholder="Masukkan deskripsi galeri"
               required

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
 
@@ -33,11 +32,52 @@ export default function AdminWisata() {
   const [categories, setCategories] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Fungsi untuk mengecek token
+  const checkToken = async () => {
+    try {
+      console.log('Checking token...');
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
+      
+      if (!token) {
+        console.log('No token found, redirecting to login...');
+        window.location.href = '/admin/login';
+        return;
+      }
+  
+      console.log('Making request to check token...');
+      const response = await fetch(import.meta.env.VITE_TOKEN_CHECK_API, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      console.log('Token check response:', data);
+      
+      if (data.status !== 'success') {
+        console.log('Token check failed, redirecting to login...');
+        localStorage.removeItem('token');
+        window.location.href = '/admin/login';
+      } else {
+        console.log('Token check successful');
+      }
+    } catch (error) {
+      console.error('Error checking token:', error);
+      localStorage.removeItem('token');
+      window.location.href = '/admin/login';
+    }
+  };  
+
   // Fungsi untuk mengambil data destinations
   const fetchDestinations = async () => {
     try {
-      const response = await axios.get(import.meta.env.VITE_WISATA_API);
-      setDestinations(response.data as AdminWisata[]);
+      const response = await fetch(import.meta.env.VITE_WISATA_API);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setDestinations(data as AdminWisata[]);
     } catch (error) {
       console.error('Error fetching destinations:', error);
       toast.error('Gagal mengambil data destinasi');
@@ -47,8 +87,12 @@ export default function AdminWisata() {
   // Fungsi untuk mengambil data kategori
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(import.meta.env.VITE_WISATA_CATEGORY_API);
-      setCategories(response.data as string[]);
+      const response = await fetch(import.meta.env.VITE_WISATA_CATEGORY_API);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setCategories(data as string[]);
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast.error('Gagal mengambil data kategori');
@@ -58,6 +102,7 @@ export default function AdminWisata() {
   useEffect(() => {
     fetchDestinations();
     fetchCategories();
+    checkToken();
   }, []);
 
   // Handle file upload
@@ -123,17 +168,28 @@ export default function AdminWisata() {
 
     try {
       setIsLoading(true);
-      const response = await axios.post(import.meta.env.VITE_WISATA_CATEGORY_API, {
-        name: newCategory.toLowerCase()
+      const response = await fetch(import.meta.env.VITE_WISATA_CATEGORY_API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          name: newCategory.toLowerCase()
+        })
       });
 
-      const data = response.data as { status: string };
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      const data = await response.json() as { status: string };
       if (data.status === 'success') {
         fetchCategories();
         setNewCategory('');
         toast.success('Kategori berhasil ditambahkan');
       } else {
-        toast.error((response.data as { message?: string }).message || 'Gagal menambahkan kategori');
+        toast.error((data as { message?: string }).message || 'Gagal menambahkan kategori');
       }
     } catch (error) {
       console.error('Error adding category:', error);
@@ -159,8 +215,18 @@ export default function AdminWisata() {
     if (result.isConfirmed) {
       try {
         setIsLoading(true);
-        const response = await axios.delete(`${import.meta.env.VITE_WISATA_CATEGORY_API}?name=${category}`);
-        const data = response.data as { status: string };
+        const response = await fetch(`${import.meta.env.VITE_WISATA_CATEGORY_API}?name=${category}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json() as { status: string };
         
         if (data.status === 'success') {
           fetchCategories();
@@ -187,7 +253,6 @@ export default function AdminWisata() {
     }
 
     try {
-      // Set loading state
       setIsLoading(true);
       setUploadProgress(0);
 
@@ -195,33 +260,36 @@ export default function AdminWisata() {
       if (selectedFile) {
         const imageFormData = new FormData();
         imageFormData.append('image', selectedFile);
-        const uploadResponse = await axios.post(
-            import.meta.env.VITE_UPLOAD_API,
-            imageFormData,
-            {
-              headers: {
-                'Content-Type': 'multipart/form-data'
-              },
-              onUploadProgress: (event: ProgressEvent) => {
-                const progress = event.total
-                  ? Math.round((event.loaded * 100) / event.total)
-                  : 0;
-                setUploadProgress(progress);
-              }
-            } as any
-          );
-        formData.imageUrl = import.meta.env.VITE_PUBLIC_URL + (uploadResponse.data as { imageUrl: string }).imageUrl;
+        const uploadResponse = await fetch(
+          import.meta.env.VITE_UPLOAD_IMAGE_API,
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: imageFormData
+          }
+        );
+
+        if (!uploadResponse.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const uploadData = await uploadResponse.json() as { imageUrl: string };
+        formData.imageUrl = import.meta.env.VITE_PUBLIC_URL + uploadData.imageUrl;
       }
 
-      if (editMode && selectedId) {
-        // Update existing destination
-        await axios.put(import.meta.env.VITE_WISATA_API, {
-          ...formData,
-          id: selectedId
-        });
-      } else {
-        // Create new destination
-        await axios.post(import.meta.env.VITE_WISATA_API, formData);
+      const apiResponse = await fetch(import.meta.env.VITE_WISATA_API, {
+        method: editMode && selectedId ? 'PUT' : 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(editMode && selectedId ? { ...formData, id: selectedId } : formData)
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error('API request failed');
       }
 
       // Reset form dan refresh data
@@ -272,7 +340,17 @@ export default function AdminWisata() {
     if (result.isConfirmed) {
       try {
         setIsLoading(true);
-        await axios.delete(`${import.meta.env.VITE_WISATA_API}?id=${id}`);
+        const response = await fetch(`${import.meta.env.VITE_WISATA_API}?id=${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Delete request failed');
+        }
+
         fetchDestinations();
         setIsLoading(false);
         Swal.fire({

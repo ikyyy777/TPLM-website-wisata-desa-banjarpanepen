@@ -10,6 +10,8 @@ interface ImportMetaEnv {
   readonly VITE_WISATA_API: string
   readonly VITE_PUBLIC_URL: string
   readonly VITE_MAIN_DOMAIN: string
+  readonly VITE_LOGOUT_API: string
+  readonly VITE_TOKEN_CHECK_API: string
 }
 
 interface ImportMeta {

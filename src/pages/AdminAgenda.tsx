@@ -25,6 +25,33 @@ export default function AdminAgenda() {
     description: ''
   });
 
+  // Fungsi untuk mengecek token
+  const checkToken = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/admin/login';
+        return;
+      }
+
+      const response = await axios.get(import.meta.env.VITE_TOKEN_CHECK_API, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      const data = response.data as { status: string };
+      if (data.status !== 'success') {
+        localStorage.removeItem('token');
+        window.location.href = '/admin/login';
+      }
+    } catch (error) {
+      // Token expired or invalid
+      localStorage.removeItem('token');
+      window.location.href = '/admin/login';
+    }
+  };
+
   // Fungsi untuk mengambil data agenda
   const fetchAgenda = async () => {
     try {
@@ -37,6 +64,7 @@ export default function AdminAgenda() {
   };
 
   useEffect(() => {
+    checkToken();
     fetchAgenda();
   }, []);
 
@@ -61,11 +89,21 @@ export default function AdminAgenda() {
         await axios.put(import.meta.env.VITE_AGENDA_API, {
           ...formData,
           id: selectedId
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
       } else {
         // Create new agenda
         await axios.post(import.meta.env.VITE_AGENDA_API, {
           agendaList: [formData]
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
       }
 
@@ -112,7 +150,12 @@ export default function AdminAgenda() {
     if (result.isConfirmed) {
       try {
         setIsLoading(true);
-        await axios.delete(`${import.meta.env.VITE_AGENDA_API}?id=${id}`);
+        await axios.delete(`${import.meta.env.VITE_AGENDA_API}?id=${id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
         fetchAgenda();
         Swal.fire({
           icon: 'success',
@@ -151,7 +194,7 @@ export default function AdminAgenda() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-800"
                 placeholder="Masukkan judul agenda"
                 required
                 disabled={isLoading}
@@ -165,7 +208,7 @@ export default function AdminAgenda() {
                 name="date"
                 value={formData.date}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-800"
                 required
                 disabled={isLoading}
               />
@@ -178,7 +221,7 @@ export default function AdminAgenda() {
                 name="time"
                 value={formData.time}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-800"
                 required
                 disabled={isLoading}
               />
@@ -191,7 +234,7 @@ export default function AdminAgenda() {
                 name="location"
                 value={formData.location}
                 onChange={handleInputChange}
-                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-800"
                 placeholder="Masukkan lokasi"
                 required
                 disabled={isLoading}
@@ -205,7 +248,7 @@ export default function AdminAgenda() {
               name="description"
               value={formData.description}
               onChange={handleInputChange}
-              className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 text-gray-800"
               rows={4}
               placeholder="Masukkan deskripsi agenda"
               required

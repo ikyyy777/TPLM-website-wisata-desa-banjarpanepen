@@ -1,19 +1,58 @@
 import { useEffect, useState } from 'react';
 import { Link, Route, Routes, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import AdminAgenda from './AdminAgenda';
 import AdminGaleri from './AdminGaleri';
 import AdminWisata from './AdminWisata';
 import toast from 'react-hot-toast';
+import { useAuth } from '../hooks/useAuth';
 
 export default function AdminPanel() {
-  const { logout } = useAuth();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  // Fungsi untuk mengecek token
+  const checkToken = async () => {
+    try {
+      console.log('Checking token...');
+      const token = localStorage.getItem('token');
+      console.log('Token:', token);
+      
+      if (!token) {
+        console.log('No token found, redirecting to login...');
+        window.location.href = '/admin/login';
+        return;
+      }
+  
+      console.log('Making request to check token...');
+      const response = await fetch(import.meta.env.VITE_TOKEN_CHECK_API, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      console.log('Token check response:', data);
+      
+      if (data.status !== 'success') {
+        console.log('Token check failed, redirecting to login...');
+        localStorage.removeItem('token');
+        window.location.href = '/admin/login';
+      } else {
+        console.log('Token check successful');
+      }
+    } catch (error) {
+      console.error('Error checking token:', error);
+      localStorage.removeItem('token');
+      window.location.href = '/admin/login';
+    }
+  };  
+
   useEffect(() => {
+    checkToken();
+    
     // Sembunyikan navbar saat komponen dimount
     const navbar = document.querySelector('nav');
     if (navbar) {
@@ -44,6 +83,7 @@ export default function AdminPanel() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({
           username: 'admin', // Hardcoded karena hanya ada 1 admin
@@ -114,14 +154,14 @@ export default function AdminPanel() {
                 placeholder="Password Baru"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               />
               <input
                 type="password"
                 placeholder="Konfirmasi Password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
               />
               <div className="flex justify-end gap-2">
                 <button

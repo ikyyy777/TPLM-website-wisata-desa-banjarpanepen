@@ -40,9 +40,31 @@ const authStore = createStore<AuthState>((set) => ({
   },
 
   logout: () => {
+    // First remove the token from localStorage
+    const token = localStorage.getItem('token');
     localStorage.removeItem('token');
     set({ isAuthenticated: false });
-  },
+
+    // Check if the token exists before making the request
+    if (token) {
+        fetch(import.meta.env.VITE_LOGOUT_API, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data.message);  // Optionally, handle the response here.
+        })
+        .catch(error => {
+            console.error('Error during logout:', error);
+        });
+    } else {
+        console.error('No token found in localStorage');
+    }
+  }
+  
 }));
 
 export const useAuth = () => useStore(authStore);
