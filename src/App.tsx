@@ -11,6 +11,7 @@ import { useAuth } from './hooks/useAuth';
 import { Toaster } from 'react-hot-toast';
 import Footer from './components/Footer';
 import Home from './index';
+import WisataArtikel from './pages/UserWisataArtikel';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -53,6 +54,7 @@ function App() {
               </PrivateRoute>
             } 
           />
+          <Route path="/wisata/:id" element={<WisataArtikel />} />
         </Routes>
         <Footer />
       </div>

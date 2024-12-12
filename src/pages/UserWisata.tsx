@@ -75,37 +75,40 @@ export default function UserWisata() {
         title="Daftar Wisata Banjarpanepen"
         subtitle="Jelajahi wisata yang ada di Banjarpanepen"
       />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center gap-4 mb-8">
-          <h3 className="text-gray-800 whitespace-nowrap">Pilih jenis wisata:</h3>
-          <div className="flex flex-wrap gap-4 overflow-x-auto">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors min-w-[128px] text-center whitespace-nowrap
-                  ${selectedCategory === category 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </button>
-            ))}
+      {isLoading ? (
+        <div className="flex justify-center items-center min-h-screen bg-white">
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full border-4 border-gray-200"></div>
+            <div className="w-12 h-12 rounded-full border-4 border-t-green-500 animate-spin absolute top-0"></div>
           </div>
         </div>
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-green-600"></div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center gap-4 mb-8">
+            <h3 className="text-gray-800 whitespace-nowrap">Pilih jenis wisata:</h3>
+            <div className="flex flex-wrap gap-4 overflow-x-auto">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors min-w-[128px] text-center whitespace-nowrap
+                    ${selectedCategory === category 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                >
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
-        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredWisata.map((wis) => (
               <Card key={wis.id} {...wis} />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

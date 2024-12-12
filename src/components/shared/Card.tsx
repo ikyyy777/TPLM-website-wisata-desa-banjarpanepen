@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
 import { Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface CardProps {
+  id: number;
   title: string;
   description: string;
   imageUrl: string;
@@ -9,13 +11,16 @@ interface CardProps {
   rating?: number;
 }
 
-export default function Card({ title, description, imageUrl, price, rating }: CardProps) {
+export default function Card({ id, title, description, imageUrl, price, rating }: CardProps) {
+  const navigate = useNavigate();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+      className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer transform transition hover:scale-105"
+      onClick={() => navigate(`/wisata/${id}`)}
     >
       <div className="relative h-48 overflow-hidden">
         <img

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
 import toast from 'react-hot-toast';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; // Import CSS untuk styling editor
 
 interface AdminWisata {
   id?: number;
@@ -10,6 +12,12 @@ interface AdminWisata {
   price: number;
   rating: number;
   kategori: string;
+  artikel: {
+    konten: string;
+    jamOperasional: string;
+    lokasi: string;
+    petaLokasi: string;
+  };
 }
 
 export default function AdminWisata() {
@@ -21,7 +29,13 @@ export default function AdminWisata() {
     imageUrl: '',
     price: 0,
     rating: 0,
-    kategori: ''
+    kategori: '',
+    artikel: {
+      konten: '',
+      jamOperasional: '',
+      lokasi: '',
+      petaLokasi: ''
+    }
   });
   const [editMode, setEditMode] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -31,6 +45,35 @@ export default function AdminWisata() {
   const [newCategory, setNewCategory] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Tambahkan konfigurasi modules untuk Quill
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      [{ font: [] }],
+      [{ size: [] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ align: [] }],
+      ['link', 'image'],
+      ['clean'],
+    ],
+  };
+
+  const formats = [
+    'header',
+    'font',
+    'size',
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'color',
+    'background',
+    'align',
+    'link',
+    'image',
+  ];
 
   // Fungsi untuk mengecek token
   const checkToken = async () => {
@@ -129,10 +172,22 @@ export default function AdminWisata() {
   };
 
   // Handle input form
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
     
-    if (name === 'price') {
+    if (name.startsWith('artikel.')) {
+      // Handle artikel fields
+      const artikelField = name.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        artikel: {
+          ...prev.artikel,
+          [artikelField]: value
+        }
+      }));
+    } else if (name === 'price') {
       const formattedValue = formatCurrency(value);
       setFormattedPrice(formattedValue);
       const numericValue = Number(value.replace(/[^\d]/g, ''));
@@ -154,7 +209,7 @@ export default function AdminWisata() {
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: type === 'number' ? parseFloat(value) : value
+        [name]: e.target.type === 'number' ? parseFloat(value) : value
       }));
     }
   };
@@ -243,7 +298,31 @@ export default function AdminWisata() {
     }
   };
 
-  // Handle submit
+  // Optimasi handler untuk ReactQuill
+  const handleQuillChange = (content: string) => {
+    // Hanya lakukan string replacement saat form akan disubmit
+    setFormData(prev => ({
+      ...prev,
+      artikel: {
+        ...prev.artikel!,
+        konten: content
+      }
+    }));
+  };
+
+  // Tambahkan fungsi untuk memformat konten sebelum submit
+  const formatContent = (content: string) => {
+    return content
+      .replace(/<h1>/g, '<h1 class="text-4xl font-bold mb-4">')
+      .replace(/<h2>/g, '<h2 class="text-3xl font-bold mb-3">')
+      .replace(/<h3>/g, '<h3 class="text-2xl font-bold mb-2">')
+      .replace(/<p>/g, '<p class="text-base mb-4">')
+      .replace(/<ul>/g, '<ul class="list-disc list-inside mb-4">')
+      .replace(/<ol>/g, '<ol class="list-decimal list-inside mb-4">')
+      .replace(/<li>/g, '<li class="mb-2">');
+  };
+
+  // Modifikasi handleSubmit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -256,7 +335,27 @@ export default function AdminWisata() {
       setIsLoading(true);
       setUploadProgress(0);
 
-      // Upload gambar terlebih dahulu
+      const formattedContent = formatContent(formData.artikel.konten);
+      
+      const updatedFormData = {
+        ...formData,
+        artikel: {
+          ...formData.artikel,
+          konten: formattedContent
+        }
+      };
+
+      // Persiapkan data wisata yang akan dikirim
+      const wisataData = {
+        title: updatedFormData.title,
+        description: updatedFormData.description,
+        imageUrl: updatedFormData.imageUrl,
+        price: updatedFormData.price,
+        rating: updatedFormData.rating,
+        kategori: updatedFormData.kategori
+      };
+
+      // Upload gambar utama jika ada
       if (selectedFile) {
         const imageFormData = new FormData();
         imageFormData.append('image', selectedFile);
@@ -276,20 +375,58 @@ export default function AdminWisata() {
         }
 
         const uploadData = await uploadResponse.json() as { imageUrl: string };
-        formData.imageUrl = import.meta.env.VITE_PUBLIC_URL + uploadData.imageUrl;
+        wisataData.imageUrl = import.meta.env.VITE_PUBLIC_URL + uploadData.imageUrl;
       }
 
-      const apiResponse = await fetch(import.meta.env.VITE_WISATA_API, {
-        method: editMode && selectedId ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(editMode && selectedId ? { ...formData, id: selectedId } : formData)
-      });
+      // Kirim data wisata ke API
+      const wisataResponse = await fetch(
+        editMode && selectedId 
+          ? `${import.meta.env.VITE_WISATA_API}?id=${selectedId}`
+          : import.meta.env.VITE_WISATA_API,
+        {
+          method: editMode && selectedId ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(editMode && selectedId ? { ...wisataData, id: selectedId } : wisataData)
+        }
+      );
 
-      if (!apiResponse.ok) {
-        throw new Error('API request failed');
+      if (!wisataResponse.ok) {
+        throw new Error('Failed to save wisata data');
+      }
+
+      const wisataResult = await wisataResponse.json();
+      const wisataId = editMode ? selectedId : wisataResult.id;
+
+      // Persiapkan data artikel dengan format JSON yang benar
+      const artikelData = {
+        id: selectedId,
+        wisata_id: wisataId,
+        konten: updatedFormData.artikel.konten,
+        jam_operasional: updatedFormData.artikel.jamOperasional,
+        lokasi: updatedFormData.artikel.lokasi,
+        peta_lokasi: updatedFormData.artikel.petaLokasi
+      };
+
+      // Kirim data artikel ke API
+      const artikelResponse = await fetch(
+        editMode 
+          ? `${import.meta.env.VITE_WISATA_ARTIKEL_API}?id=${wisataId}`
+          : import.meta.env.VITE_WISATA_ARTIKEL_API,
+        {
+          method: editMode ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify(artikelData)
+        }
+      );
+
+      if (!artikelResponse.ok) {
+        throw new Error('Failed to save artikel data');
       }
 
       // Reset form dan refresh data
@@ -299,7 +436,13 @@ export default function AdminWisata() {
         imageUrl: '',
         price: 0,
         rating: 0,
-        kategori: ''
+        kategori: '',
+        artikel: {
+          konten: '',
+          jamOperasional: '',
+          lokasi: '',
+          petaLokasi: ''
+        }
       });
       setFormattedPrice('');
       setSelectedFile(null);
@@ -312,7 +455,7 @@ export default function AdminWisata() {
       Swal.fire({
         icon: 'success',
         title: 'Berhasil!',
-        text: editMode ? 'Destinasi berhasil diperbarui!' : 'Destinasi berhasil ditambahkan!',
+        text: editMode ? 'Data berhasil diperbarui!' : 'Data berhasil ditambahkan!',
         timer: 2000,
         showConfirmButton: false
       });
@@ -328,7 +471,7 @@ export default function AdminWisata() {
   const handleDelete = async (id: number) => {
     const result = await Swal.fire({
       title: 'Apakah Anda yakin?',
-      text: "Data wisata akan dihapus permanen!",
+      text: "Data akan dihapus permanen!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -340,15 +483,29 @@ export default function AdminWisata() {
     if (result.isConfirmed) {
       try {
         setIsLoading(true);
-        const response = await fetch(`${import.meta.env.VITE_WISATA_API}?id=${id}`, {
+        
+        // Hapus data artikel terlebih dahulu
+        const artikelResponse = await fetch(`${import.meta.env.VITE_WISATA_ARTIKEL_API}?id=${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           }
         });
 
-        if (!response.ok) {
-          throw new Error('Delete request failed');
+        if (!artikelResponse.ok) {
+          throw new Error('Failed to delete artikel data');
+        }
+
+        // Kemudian hapus data wisata
+        const wisataResponse = await fetch(`${import.meta.env.VITE_WISATA_API}?id=${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        if (!wisataResponse.ok) {
+          throw new Error('Failed to delete wisata data');
         }
 
         fetchDestinations();
@@ -356,26 +513,70 @@ export default function AdminWisata() {
         Swal.fire({
           icon: 'success',
           title: 'Terhapus!',
-          text: 'Data wisata berhasil dihapus.',
+          text: 'Data berhasil dihapus.',
           timer: 2000,
           showConfirmButton: false
         });
       } catch (error) {
-        console.error('Error deleting destination:', error);
+        console.error('Error deleting data:', error);
         setIsLoading(false);
-        toast.error('Gagal menghapus destinasi');
+        toast.error('Gagal menghapus data');
       }
     }
   };
 
+  // Handle edit button click
+  const handleEdit = async (destination: AdminWisata) => {
+    try {
+      setIsLoading(true);
+      
+      // Ambil data artikel berdasarkan wisata_id
+      const artikelResponse = await fetch(`${import.meta.env.VITE_WISATA_ARTIKEL_API}?wisata_id=${destination.id}`);
+      if (!artikelResponse.ok) {
+        throw new Error('Failed to fetch artikel data');
+      }
+      
+      const artikelData = await artikelResponse.json();
+      
+      // Periksa apakah artikelData null
+      if (!artikelData) {
+        throw new Error('Artikel data not found');
+      }
+
+      setEditMode(true);
+      setSelectedId(destination.id ?? null);
+      setFormData({
+        ...destination,
+        artikel: {
+          konten: artikelData.konten || '',
+          jamOperasional: artikelData.jam_operasional || '',
+          lokasi: artikelData.lokasi || '',
+          petaLokasi: artikelData.peta_lokasi || ''
+        }
+      });
+      setFormattedPrice(formatCurrency(destination.price.toString()));
+      
+    } catch (error) {
+      console.error('Error fetching artikel data:', error);
+      toast.error('Gagal mengambil data artikel');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-white">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-4 border-gray-200"></div>
+          <div className="w-12 h-12 rounded-full border-4 border-t-green-500 animate-spin absolute top-0"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 relative">
-      {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      )}
-      
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Kelola Wisata</h2>
       
       {/* Form */}
@@ -484,7 +685,7 @@ export default function AdminWisata() {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Gambar</label>
+              <label className="block text-gray-700 mb-2">Gambar Utama</label>
               <input
                 type="file"
                 onChange={handleFileChange}
@@ -514,22 +715,83 @@ export default function AdminWisata() {
           </div>
 
           <div className="mt-4">
-            <label className="block text-gray-700 mb-2">Deskripsi</label>
+            <label className="block text-gray-700 mb-2">Deskripsi Singkat</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleInputChange}
               className="w-full p-2 rounded border border-gray-300 text-gray-800"
               rows={4}
-              placeholder="Masukkan deskripsi wisata"
+              placeholder="Masukkan deskripsi singkat wisata"
               required
               disabled={isLoading}
             />
           </div>
 
+          {/* Form Artikel */}
+          <div className="mt-6 border-t pt-6">
+            <h3 className="text-xl font-semibold mb-4">Informasi Detail Artikel</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-gray-700 mb-2">Konten Artikel Lengkap</label>
+                <ReactQuill
+                  theme="snow"
+                  value={formData.artikel?.konten}
+                  onChange={handleQuillChange}
+                  modules={modules}
+                  formats={formats}
+                  className="bg-white text-gray-800"
+                  style={{ height: '300px', marginBottom: '50px' }}
+                  placeholder="Masukkan konten artikel lengkap"
+                  readOnly={isLoading}
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2">Jam Operasional</label>
+                <input
+                  type="text"
+                  name="artikel.jamOperasional"
+                  value={formData.artikel?.jamOperasional}
+                  onChange={handleInputChange}
+                  className="w-full p-2 rounded border border-gray-300 text-gray-800"
+                  placeholder="Contoh: Senin-Minggu, 08:00-17:00 WIB"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2">Lokasi</label>
+                <textarea
+                  name="artikel.lokasi"
+                  value={formData.artikel?.lokasi}
+                  onChange={handleInputChange}
+                  className="w-full p-2 rounded border border-gray-300 text-gray-800"
+                  rows={3}
+                  placeholder="Masukkan alamat lengkap lokasi"
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2">Link Google Maps</label>
+                <input
+                  type="text"
+                  name="artikel.petaLokasi"
+                  value={formData.artikel?.petaLokasi}
+                  onChange={handleInputChange}
+                  className="w-full p-2 rounded border border-gray-300 text-gray-800"
+                  placeholder="Masukkan link Google Maps"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+          </div>
+
           <button
             type="submit"
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             disabled={!!ratingError || isLoading}
           >
             {editMode ? 'Update Destinasi' : 'Tambah Destinasi'}
@@ -573,12 +835,7 @@ export default function AdminWisata() {
                   <td className="p-3">{destination.kategori}</td>
                   <td className="p-3">
                     <button
-                      onClick={() => {
-                        setEditMode(true);
-                        setSelectedId(destination.id ?? null);
-                        setFormData(destination);
-                        setFormattedPrice(formatCurrency(destination.price.toString()));
-                      }}
+                      onClick={() => handleEdit(destination)}
                       className="mr-2 px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700"
                       disabled={isLoading}
                     >

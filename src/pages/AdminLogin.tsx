@@ -101,7 +101,10 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full border-4 border-gray-200"></div>
+            <div className="w-12 h-12 rounded-full border-4 border-t-green-500 animate-spin absolute top-0"></div>
+          </div>
         </div>
       )}
       <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow-md w-full max-w-sm">
