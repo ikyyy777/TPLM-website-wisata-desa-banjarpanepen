@@ -5,6 +5,7 @@ import AdminGaleri from './AdminGaleri';
 import AdminWisata from './AdminWisata';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function AdminPanel() {
   const navigate = useNavigate();
@@ -12,6 +13,15 @@ export default function AdminPanel() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Fungsi untuk memvalidasi input
+  const validateInput = (value: string) => {
+    // Hanya mengizinkan huruf, angka, dan simbol !@#$%
+    const regex = /^[a-zA-Z0-9!@#$%]*$/;
+    return regex.test(value);
+  };
 
   // Fungsi untuk mengecek token
   const checkToken = async () => {
@@ -106,6 +116,13 @@ export default function AdminPanel() {
     }
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>, setPassword: (value: string) => void) => {
+    const newValue = e.target.value;
+    if (validateInput(newValue)) {
+      setPassword(newValue);
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-gray-100">
       <aside className="w-64 bg-white text-gray-800 flex flex-col h-screen sticky top-0 shadow-lg">
@@ -149,20 +166,38 @@ export default function AdminPanel() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg w-96 shadow-xl">
               <h2 className="text-gray-800 text-xl mb-4">Ganti Password</h2>
-              <input
-                type="password"
-                placeholder="Password Baru"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-              />
-              <input
-                type="password"
-                placeholder="Konfirmasi Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full mb-4 p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-              />
+              <div className="relative mb-4">
+                <input
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="Password Baru"
+                  value={newPassword}
+                  onChange={(e) => handlePasswordChange(e, setNewPassword)}
+                  className="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showNewPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                </button>
+              </div>
+              <div className="relative mb-4">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Konfirmasi Password"
+                  value={confirmPassword}
+                  onChange={(e) => handlePasswordChange(e, setConfirmPassword)}
+                  className="w-full p-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                >
+                  {showConfirmPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+                </button>
+              </div>
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setShowPasswordDialog(false)}

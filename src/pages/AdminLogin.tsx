@@ -1,14 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  // Fungsi untuk memvalidasi input
+  const validateInput = (value: string) => {
+    // Hanya mengizinkan huruf, angka, dan simbol !@#$%
+    const regex = /^[a-zA-Z0-9!@#$%]*$/;
+    return regex.test(value);
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    if (validateInput(newValue)) {
+      setUsername(newValue);
+    }
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    if (validateInput(newValue)) {
+      setPassword(newValue);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,20 +116,31 @@ export default function AdminLogin() {
           <input
             type="text"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={handleUsernameChange}
             className="w-full px-3 py-2 border rounded bg-white text-gray-800 border-gray-300 focus:border-blue-500 focus:outline-none"
             required
+            placeholder="Hanya huruf, angka, dan simbol !@#$%"
           />
         </div>
         <div className="mb-6">
           <label className="block text-gray-700">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 border rounded bg-white text-gray-800 border-gray-300 focus:border-blue-500 focus:outline-none"
-            required
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={handlePasswordChange}
+              className="w-full px-3 py-2 border rounded bg-white text-gray-800 border-gray-300 focus:border-blue-500 focus:outline-none"
+              required
+              placeholder="Hanya huruf, angka, dan simbol !@#$%"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+            </button>
+          </div>
         </div>
         <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-200">
           Login
