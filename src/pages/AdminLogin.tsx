@@ -30,9 +30,16 @@ export default function AdminLogin() {
       const token = localStorage.getItem('token');
       console.log('Token:', token);
       
+      // Jika tidak ada token dan sudah berada di halaman login, tidak perlu redirect
+      if (!token && window.location.pathname === '/admin/login') {
+        setIsLoading(false);
+        return;
+      }
+      
+      // Jika tidak ada token dan bukan di halaman login, redirect ke login
       if (!token) {
         console.log('No token found, redirecting to login...');
-        window.location.href = '/admin/login';
+        navigate('/admin/login');
         return;
       }
   
@@ -49,15 +56,15 @@ export default function AdminLogin() {
       if (data.status !== 'success') {
         console.log('Token check failed, redirecting to login...');
         localStorage.removeItem('token');
-        window.location.href = '/admin/login';
+        navigate('/admin/login');
       } else {
-        window.location.href = '/admin/wisata';
+        navigate('/admin/wisata');
         console.log('Token check successful');
       }
     } catch (error) {
       console.error('Error checking token:', error);
       localStorage.removeItem('token');
-      window.location.href = '/admin/login';
+      navigate('/admin/login');
     } finally {
       setIsLoading(false);
     }
