@@ -10,7 +10,6 @@ interface AdminWisata {
   description: string;
   imageUrl: string;
   price: number;
-  rating: number;
   kategori: string;
   artikel: {
     konten: string;
@@ -28,7 +27,6 @@ export default function AdminWisata() {
     description: '',
     imageUrl: '',
     price: 0,
-    rating: 0,
     kategori: '',
     artikel: {
       konten: '',
@@ -39,7 +37,6 @@ export default function AdminWisata() {
   });
   const [editMode, setEditMode] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const [ratingError, setRatingError] = useState('');
   const [formattedPrice, setFormattedPrice] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [newCategory, setNewCategory] = useState('');
@@ -195,17 +192,6 @@ export default function AdminWisata() {
         ...prev,
         price: numericValue
       }));
-    } else if (name === 'rating') {
-      const ratingValue = parseFloat(value);
-      if (ratingValue > 5) {
-        setRatingError('Rating tidak boleh lebih dari 5');
-      } else {
-        setRatingError('');
-        setFormData(prev => ({
-          ...prev,
-          rating: ratingValue
-        }));
-      }
     } else {
       setFormData(prev => ({
         ...prev,
@@ -325,11 +311,6 @@ export default function AdminWisata() {
   // Modifikasi handleSubmit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (ratingError) {
-      toast.error('Harap perbaiki error pada rating sebelum submit');
-      return;
-    }
 
     try {
       setIsLoading(true);
@@ -351,7 +332,6 @@ export default function AdminWisata() {
         description: updatedFormData.description,
         imageUrl: updatedFormData.imageUrl,
         price: updatedFormData.price,
-        rating: updatedFormData.rating,
         kategori: updatedFormData.kategori
       };
 
@@ -435,7 +415,6 @@ export default function AdminWisata() {
         description: '',
         imageUrl: '',
         price: 0,
-        rating: 0,
         kategori: '',
         artikel: {
           konten: '',
@@ -612,24 +591,6 @@ export default function AdminWisata() {
             </div>
 
             <div>
-              <label className="block text-gray-700 mb-2">Rating</label>
-              <input
-                type="number"
-                name="rating"
-                min="0"
-                max="5"
-                step="0.1"
-                value={formData.rating}
-                onChange={handleInputChange}
-                className={`w-full p-2 rounded border border-gray-300 text-gray-800 ${ratingError ? 'border-red-500' : ''}`}
-                placeholder="Masukkan rating (0-5)"
-                required
-                disabled={isLoading}
-              />
-              {ratingError && <p className="text-red-500 text-sm mt-1">{ratingError}</p>}
-            </div>
-
-            <div>
               <label className="block text-gray-700 mb-2">Kategori</label>
               <div className="flex gap-2">
                 <select
@@ -792,7 +753,7 @@ export default function AdminWisata() {
           <button
             type="submit"
             className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            disabled={!!ratingError || isLoading}
+            disabled={isLoading}
           >
             {editMode ? 'Update Destinasi' : 'Tambah Destinasi'}
           </button>
@@ -809,7 +770,6 @@ export default function AdminWisata() {
                 <th className="p-3 text-left">Judul</th>
                 <th className="p-3 text-left">Deskripsi</th>
                 <th className="p-3 text-left">Harga</th>
-                <th className="p-3 text-left">Rating</th>
                 <th className="p-3 text-left">Kategori</th>
                 <th className="p-3 text-left">Aksi</th>
               </tr>
@@ -831,7 +791,6 @@ export default function AdminWisata() {
                     currency: 'IDR',
                     minimumFractionDigits: 0
                   }).format(destination.price)}</td>
-                  <td className="p-3">{destination.rating}</td>
                   <td className="p-3">{destination.kategori}</td>
                   <td className="p-3">
                     <button
