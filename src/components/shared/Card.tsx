@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CardProps {
@@ -8,11 +7,10 @@ interface CardProps {
   description: string;
   imageUrl: string;
   price?: number;
-  rating?: number;
   slug: string;
 }
 
-export default function Card({ title, description, imageUrl, price, rating, slug }: CardProps) {
+export default function Card({ title, description, imageUrl, price, slug }: CardProps) {
   const navigate = useNavigate();
 
   return (
@@ -38,12 +36,6 @@ export default function Card({ title, description, imageUrl, price, rating, slug
             <span className="text-green-600 font-bold">
               {price.toLocaleString()}
             </span>
-          )}
-          {rating && (
-            <div className="flex items-center">
-              <Star className="h-5 w-5 text-yellow-400 mr-1" />
-              <span className="text-gray-600">{rating.toFixed(1)}</span>
-            </div>
           )}
         </div>
       </div>
