@@ -12,7 +12,7 @@ interface CardProps {
   slug: string;
 }
 
-export default function Card({ id, title, description, imageUrl, price, rating, slug }: CardProps) {
+export default function Card({ title, description, imageUrl, price, rating, slug }: CardProps) {
   const navigate = useNavigate();
 
   return (
