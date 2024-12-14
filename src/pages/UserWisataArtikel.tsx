@@ -20,6 +20,7 @@ interface Wisata {
   price: string;
   rating: string;
   kategori: string;
+  slug: string;
 }
 
 declare module 'html-to-react' {
@@ -30,35 +31,34 @@ declare module 'html-to-react' {
 
 
 export default function WisataArtikel() {
-  const { id } = useParams();
+  const { slug: slug } = useParams();
   const [artikel, setArtikel] = useState<ArtikelWisata | null>(null);
   const [, setWisata] = useState<Wisata | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [artikelResponse, wisataResponse] = await Promise.all([
-          fetch(`${import.meta.env.VITE_WISATA_ARTIKEL_API}?wisata_id=${id}`),
-          fetch(`${import.meta.env.VITE_WISATA_API}?id=${id}`),
-        ]);
-
-        const artikelData = await artikelResponse.json();
+        const wisataResponse = await fetch(`${import.meta.env.VITE_WISATA_API}?slug=${slug}`);
         const wisataData = await wisataResponse.json();
 
-        if (artikelData) {
-          setArtikel({
-            id: artikelData.id,
-            wisata_id: artikelData.wisata_id,
-            konten: artikelData.konten,
-            jam_operasional: artikelData.jam_operasional,
-            lokasi: artikelData.lokasi,
-            peta_lokasi: artikelData.peta_lokasi,
-          });
-        }
-
         if (wisataData) {
+          const artikelResponse = await fetch(`${import.meta.env.VITE_WISATA_ARTIKEL_API}?wisata_id=${wisataData.id}`);
+          const artikelData = await artikelResponse.json();
+
+          if (artikelData) {
+            setArtikel({
+              id: artikelData.id,
+              wisata_id: artikelData.wisata_id,
+              konten: artikelData.konten,
+              jam_operasional: artikelData.jam_operasional,
+              lokasi: artikelData.lokasi,
+              peta_lokasi: artikelData.peta_lokasi,
+            });
+          }
+
           setWisata({
             id: wisataData.id,
             title: wisataData.title,
@@ -67,6 +67,7 @@ export default function WisataArtikel() {
             price: wisataData.price,
             rating: wisataData.rating,
             kategori: wisataData.kategori,
+            slug: wisataData.slug,
           });
         }
       } catch (error) {
@@ -76,10 +77,13 @@ export default function WisataArtikel() {
       }
     };
 
-    if (id) {
+    if (slug) {
       fetchData();
     }
-  }, [id]);
+    else {
+      console.log('slug tidak ditemukan');
+    }
+  }, [slug]);
 
 
   const renderKonten = (konten: string) => {
@@ -151,7 +155,9 @@ export default function WisataArtikel() {
                   <span className="font-semibold text-gray-700">Peta Lokasi:</span>
                 </div>
                 <div className="rounded-lg overflow-hidden">
-                  <div dangerouslySetInnerHTML={{ __html: artikel.peta_lokasi }} />
+                  <a href={artikel.peta_lokasi} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    {artikel.peta_lokasi}
+                  </a>
                 </div>
               </div>
             )}

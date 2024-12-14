@@ -9,9 +9,10 @@ interface CardProps {
   imageUrl: string;
   price?: number;
   rating?: number;
+  slug: string;
 }
 
-export default function Card({ id, title, description, imageUrl, price, rating }: CardProps) {
+export default function Card({ id, title, description, imageUrl, price, rating, slug }: CardProps) {
   const navigate = useNavigate();
 
   return (
@@ -20,7 +21,7 @@ export default function Card({ id, title, description, imageUrl, price, rating }
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer transform transition hover:scale-105"
-      onClick={() => navigate(`/wisata/${id}`)}
+      onClick={() => navigate(`/wisata/${slug}`)}
     >
       <div className="relative h-48 overflow-hidden">
         <img

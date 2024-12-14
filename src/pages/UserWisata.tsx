@@ -10,6 +10,14 @@ interface Wisata {
   price: number;
   rating: number;
   kategori?: string;
+  slug: string;
+}
+
+function createSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
 }
 
 export default function UserWisata() {
@@ -43,12 +51,12 @@ export default function UserWisata() {
         setIsLoading(true);
         const response = await fetch(import.meta.env.VITE_WISATA_API);
         const data = await response.json();
-        // Convert rating to number and update imageUrl with domain
         const wisataWithUpdates = data.map((wis: any) => ({
           ...wis,
           rating: Number(wis.rating),
           price: Number(wis.price),
-          imageUrl: wis.imageUrl.startsWith('http') ? wis.imageUrl : `${import.meta.env.VITE_PUBLIC_URL}${wis.imageUrl}`
+          imageUrl: wis.imageUrl.startsWith('http') ? wis.imageUrl : `${import.meta.env.VITE_PUBLIC_URL}${wis.imageUrl}`,
+          slug: createSlug(wis.title)
         }));
         setWisata(wisataWithUpdates.map((wis: Wisata) => ({
           ...wis,

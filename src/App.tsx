@@ -54,7 +54,7 @@ function App() {
               </PrivateRoute>
             } 
           />
-          <Route path="/wisata/:id" element={<WisataArtikel />} />
+          <Route path="/wisata/:slug" element={<WisataArtikel />} />
         </Routes>
         <Footer />
       </div>
