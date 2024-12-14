@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 
 export default function ProfileDesa() {
   return (
-    <section className="bg-gray-50 py-20 px-4">
+    <section id="profile-desa" className="bg-gray-50 py-20 px-4">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ y: 20, opacity: 0 }}
