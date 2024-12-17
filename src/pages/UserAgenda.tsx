@@ -57,8 +57,17 @@ export default function UserAgenda() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <div className="relative">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white relative">
+      {/* Watermark */}
+      <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
+        <img 
+          src="/assets/logo.png" 
+          alt="Watermark"
+          className="w-120 h-96 opacity-5"
+        />
+      </div>
+
+      <div className="relative z-10">
         <div className="absolute inset-0 bg-blue-600 opacity-10 pattern-dots"></div>
         <PageHeader
           title="Agenda Desa"
@@ -67,14 +76,14 @@ export default function UserAgenda() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center items-center min-h-[60vh]">
+        <div className="flex justify-center items-center min-h-[60vh] relative z-10">
           <div className="relative">
             <div className="w-16 h-16 rounded-full border-4 border-blue-100"></div>
             <div className="w-16 h-16 rounded-full border-4 border-t-blue-600 animate-spin absolute top-0"></div>
           </div>
         </div>
       ) : (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
           <div className="grid gap-8">
             {agendaList.map((agenda, index) => (
               <motion.div

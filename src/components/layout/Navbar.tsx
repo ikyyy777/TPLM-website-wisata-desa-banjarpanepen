@@ -11,14 +11,13 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <Compass className="h-8 w-8 text-green-600" />
-              <span className="ml-2 text-gray-800 font-bold text-xl">Wisata Banjarpanepen</span>
+              <img src="/assets/logo.png" alt="Logo Wisata Banjarpanepen" className="h-12" />
             </Link>
           </div>
           
           <div className="hidden md:flex items-center">
             <div className="ml-10 flex items-baseline space-x-4">
-              <NavLink to="/">Home</NavLink>
+              <NavLink to="/">Desa</NavLink>
               <NavLink to="/wisata">Wisata</NavLink>
               <NavLink to="/agenda">Agenda</NavLink>
               <NavLink to="/galeri">Galeri</NavLink>
@@ -44,7 +43,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden bg-gray-50">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <MobileNavLink to="/">Home</MobileNavLink>
+            <MobileNavLink to="/">Desa</MobileNavLink>
             <MobileNavLink to="/wisata">Wisata</MobileNavLink>
             <MobileNavLink to="/agenda">Agenda</MobileNavLink>
             <MobileNavLink to="/galeri">Galeri</MobileNavLink>

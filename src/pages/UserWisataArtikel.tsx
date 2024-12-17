@@ -118,6 +118,15 @@ export default function WisataArtikel() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Watermark */}
+      <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
+        <img 
+          src="/assets/logo.png" 
+          alt="Watermark"
+          className="w-120 h-96 opacity-5"
+        />
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <article className="bg-white shadow-sm rounded-xl p-8">
           <div className="text-black mb-8">

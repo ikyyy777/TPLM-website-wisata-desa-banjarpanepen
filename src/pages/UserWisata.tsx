@@ -78,6 +78,15 @@ export default function UserWisata() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+      {/* Watermark */}
+      <div className="fixed inset-0 pointer-events-none z-0 flex items-center justify-center">
+        <img 
+          src="/assets/logo.png" 
+          alt="Watermark"
+          className="w-120 h-96 opacity-5"
+        />
+      </div>
+
       <div className="relative">
         <div className="absolute inset-0 bg-green-600 opacity-10 pattern-dots"></div>
         <PageHeader

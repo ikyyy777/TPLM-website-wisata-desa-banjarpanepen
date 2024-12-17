@@ -1,5 +1,5 @@
-import Hero from './components/home/Hero';
-import ProfileDesa from './components/home/ProfileDesa';
+import Hero from './components/desa/Hero';
+import ProfileDesa from './components/desa/ProfileDesa';
 
 export default function Home() {
   return (
