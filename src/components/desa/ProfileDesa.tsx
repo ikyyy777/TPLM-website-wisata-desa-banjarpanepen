@@ -26,25 +26,14 @@ export default function ProfileDesa() {
             className="space-y-6"
           >
             <p className="text-gray-600 leading-relaxed">
-              Desa Banjarpanepen merupakan salah satu desa yang terletak di Kecamatan Sumpiuh, 
-              Kabupaten Banyumas, Provinsi Jawa Tengah. Desa ini memiliki keunikan tersendiri 
-              dengan kekayaan alam dan budaya yang masih terjaga dengan baik.
+              Desa Wisata Banjarpanepen terletak di Kecamatan Sumpiuh Kabupaten Banyumas. Jarak dari ibukota kabupaten sejauh ± 35 km. Walaupun berjarak cukup jauh, akan tetapi Desa Bajarpanepen memiliki potensi wisata yang menarik, diantaranya Wisata Edukatif yaitu Pembuatan Gula kristal, Pembuatan Karag dan budidaya Madu Klanceng. Wisata Budaya berupa Tradisi Ruat Bumi oleh masyarakat setempat, Kungkum (berendam) di Kali Cawang pada malam Bulan Purnama setiap bulan Sadran/Saban dan fasilitas penginapan sudah tersedia 4 Homestay.
             </p>
             <p className="text-gray-600 leading-relaxed">
-              Dengan luas wilayah sekitar X hektar, Desa Banjarpanepen dikelilingi oleh 
-              pemandangan alam yang memukau, mulai dari area persawahan yang membentang hijau 
-              hingga perbukitan yang menyajikan panorama indah.
+              Desa ini juga memiliki cagar budaya yaitu Petilasan Patih Gajah Mada yang menurut cerita wrga setempat pernah menjadi petilasan Sang Patih, petiasan ini yang disebut Watu Jonggol. Kemudian terdapat wisata alam yaitu Kali Cawang, Curug Kelapa, dan Bukit Pengaritan. Desa Banjarpanepen dicanangkan oleh Bupati Banyumas sebagai "Desa Kerukunan" karena terdapat 4 keyakinan yang hidup rukun. Empat keyakinan tersebut yaitu: Islam, Kristen, Buddha dan kepercayaan terhadap Tuhan YME. Masing masing keyakinan tersebut memiliki tempat Ibadah di Desa Banjarpanepen.
             </p>
-            <motion.button
-              initial={{ y: 20, opacity: 0 }}
-              whileInView={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="bg-green-600 text-white px-6 py-2 rounded-full font-semibold 
-                hover:bg-green-700 transition-colors"
-            >
-              Pelajari Lebih Lanjut
-            </motion.button>
+            <p className="text-gray-600 leading-relaxed">
+              Desa wisata Banjarpanepen memiliki banyak keindahan alam yang dapat dinikmati oleh wisatawan, diantaranya di kawasan pegunungan desa wisata Banjarpanepen terdapat hutan pinus dan karet yang dimiliki oleh perhutani dan dikelola oleh masyarakat lokal. Adapun wisatawan dapat menikmati keindahan alam tersebut bersama dengan cafe kopi terdekat. Selain itu terdapat sungai dengan air yang jernih yang sudah dibendung di Kalicawang untuk dinikmati oleh wisatawan untuk berenang.
+            </p>
           </motion.div>
 
           <motion.div
@@ -56,22 +45,22 @@ export default function ProfileDesa() {
           >
             <div className="space-y-4">
               <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
-                <h3 className="text-green-600 text-4xl font-bold mb-2">1.234</h3>
-                <p className="text-gray-800">Jumlah Penduduk</p>
+                <h3 className="text-green-600 text-4xl font-bold mb-2">4</h3>
+                <p className="text-gray-800">Agama & Kepercayaan</p>
               </div>
               <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
-                <h3 className="text-green-600 text-4xl font-bold mb-2">5+</h3>
-                <p className="text-gray-800">Destinasi Wisata</p>
+                <h3 className="text-green-600 text-4xl font-bold mb-2">4</h3>
+                <p className="text-gray-800">Homestay</p>
               </div>
             </div>
             <div className="space-y-4 mt-8">
               <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
-                <h3 className="text-green-600 text-4xl font-bold mb-2">10+</h3>
-                <p className="text-gray-800">UMKM Aktif</p>
+                <h3 className="text-green-600 text-4xl font-bold mb-2">3+</h3>
+                <p className="text-gray-800">Wisata Alam</p>
               </div>
               <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
                 <h3 className="text-green-600 text-4xl font-bold mb-2">3+</h3>
-                <p className="text-gray-800">Budaya Lokal</p>
+                <p className="text-gray-800">Wisata Edukatif</p>
               </div>
             </div>
           </motion.div>

@@ -75,9 +75,9 @@ export default function UserHubungi() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">Alamat Kantor</h3>
                         <p className="mt-1 text-gray-600">
-                          Jl. Nama Jalan No. 123<br />
-                          Kecamatan Nama Kecamatan, 12345<br />
-                          Indonesia
+                          Sidakampir, Banjarpanepen<br />
+                          Kec. Sumpiuh, Kabupaten Banyumas<br />
+                          Jawa Tengah 53195.
                         </p>
                       </div>
                     </div>
@@ -89,9 +89,7 @@ export default function UserHubungi() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">Jam Operasional</h3>
                         <div className="mt-1 space-y-1 text-gray-600">
-                          <p>Senin - Jumat: 09:00 - 17:00 WIB</p>
-                          <p>Sabtu: 09:00 - 15:00 WIB</p>
-                          <p>Minggu: Tutup</p>
+                          <p>Senin - Jumat: 08:00 - 17:00 WIB</p>
                         </div>
                       </div>
                     </div>
